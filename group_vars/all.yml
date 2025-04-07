@@ -1,5 +1,5 @@
 ---
-
+ansible_user: ec2-user
 # Defined AWS security group rules here.  These have evolved over time as I've 
 # added ports for various demos.
 ####  NEED  to create an update security group playbook ####
