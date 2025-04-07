@@ -12,6 +12,7 @@
         name_filter: "{{ bucket_name }}"
         bucket_facts:
           bucket_lifecycle_configuration: true
+          bucket_encryption: true
       register: bucket_info 
 
     - debug:

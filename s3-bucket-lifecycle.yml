@@ -10,6 +10,7 @@
     - name: Create S3 Bucket 
       amazon.aws.s3_bucket:
         name: "{{ bucket_name }}"
+        encryption: "aws:kms"
         state: present
 
     - name: Add some files
@@ -26,7 +27,7 @@
         - { object: /ansible/rhel-updates.yml, src: "rhel-updates.yml" }
         - { object: /ansible/rhel-instance.yml, src: "rhel-instance.yml" }
 
-    - name: Set a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
+    - name: Set a lifecycle rule to transition all items with a prefix of /ansible/ to glacier after 7 days and then delete after 90 days
       community.aws.s3_lifecycle:
         name: "{{ bucket_name }}"
         transition_days: 7
