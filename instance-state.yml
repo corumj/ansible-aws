@@ -1,0 +1,16 @@
+--- 
+- name: Control AWS Instance State 
+  hosts: all 
+  gather_facts: no 
+
+  vars:
+    desired_state: "{{ survey_desired_state | default('present') }}"
+          # Options include present, running, started, stopped, terminated, etc.
+
+  tasks:
+    - name: Control Instance State by Inventory
+      amazon.aws.ec2_instance:
+        state: "{{ desired_state }}"
+        instance_ids:
+          - "{{ ec2_id }}"  # Created from dynamic inventory via compose
+      delegate_to: localhost 
