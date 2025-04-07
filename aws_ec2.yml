@@ -12,6 +12,7 @@ hostnames:
 
 compose: 
   private_dns_name: private-dns-name 
+  ec2_id: instance_id
   
 keyed_groups:
   - key: 'tags.group_name'
