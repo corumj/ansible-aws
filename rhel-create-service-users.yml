@@ -1,0 +1,19 @@
+--- 
+- name: Create service accounts for RHEL 
+  hosts: all 
+  gather_facts: no 
+  become: yes 
+
+  vars: 
+    users:
+      - username: qualys 
+        comment: Qualys account for TVM Scan 
+      - username: serv_servicenow 
+        comment: ServiceNow Team account 
+
+  tasks: 
+    - name: Add the service account users
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        comment: "{{ item.comment }}"
+      loop: "{{ users }}"
