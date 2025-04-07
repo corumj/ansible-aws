@@ -1,0 +1,6 @@
+.DS_Store
+.vscode
+*.tar.gz
+extra_vars.yml
+test.yml
+ansible-navigator.log

@@ -1,0 +1,43 @@
+--- 
+- name: Create a RHEL 9 instance in AWS 
+  hosts: localhost 
+
+  tasks: 
+    - name: Retrieve AWS Infra info
+      ansible.builtin.import_role:
+        name: aws_infra_info 
+
+    - name: Find AMI for Linux Host
+      amazon.aws.ec2_ami_info:
+        owners: 309956199498
+        filters:
+          name: 'RHEL-9*HVM-*Hourly*'
+          architecture: x86_64
+      register: amis
+
+    - name: save ami for rhel node
+      set_fact:
+        node_ami_rhel: >
+          {{ amis.images | selectattr('name', 'defined') | sort(attribute='name') | last }}
+
+    - name: Provision a RHEL instance 
+      amazon.aws.ec2_instance: 
+        state: started
+        name: "jpc-rhel-9-host1"
+        security_group: "{{ sec_grp_name }}"
+        vpc_subnet_id: "{{ vpc_subnet_id }}"
+        image_id: "{{ node_ami_rhel.image_id }}"
+        instance_type: t2.micro
+        exact_count: "1"
+        key_name: "ansible-demo-key"
+        volumes:
+          - device_name: /dev/sda1 
+            ebs:
+              volume_size: 60 
+              delete_on_termination: true 
+        tags: 
+          group_name: "aap"
+          demo: Ansible 
+        wait: yes
+      async: 3000
+      poll: 30

@@ -1,0 +1,13 @@
+--- 
+- name: Validate credentials are setup for AWS 
+  hosts: localhost 
+
+  tasks:
+    - name: Verify AWS Credentials 
+      amazon.aws.aws_caller_info:
+      register: caller_info
+
+    - name: Print caller info 
+      ansible.builtin.debug:
+        var: caller_info
+
