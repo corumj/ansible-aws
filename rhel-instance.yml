@@ -20,15 +20,15 @@
         node_ami_rhel: >
           {{ amis.images | selectattr('name', 'defined') | sort(attribute='name') | last }}
 
-    - name: Provision a RHEL instance 
+    - name: Provision RHEL instances
       amazon.aws.ec2_instance: 
         state: started
-        name: "jpc-rhel-9-host1"
+        # name: "jpc-rhel-9-host1"
         security_group: "{{ sec_grp_name }}"
         vpc_subnet_id: "{{ vpc_subnet_id }}"
         image_id: "{{ node_ami_rhel.image_id }}"
         instance_type: t2.micro
-        exact_count: "1"
+        exact_count: "3"
         key_name: "ansible-demo-key"
         volumes:
           - device_name: /dev/sda1 
