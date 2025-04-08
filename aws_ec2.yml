@@ -5,10 +5,13 @@ regions:
 
 filters:
   tag:demo: Ansible
-  instance-state-name: '*'
+#  instance-state-name: '*'
 
 hostnames:
   - tag:Name
+  - private-dns-name
+
+allow_duplicated_hosts: false 
 
 compose: 
   private_dns_name: private-dns-name 
