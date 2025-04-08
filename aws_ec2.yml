@@ -16,7 +16,7 @@ allow_duplicated_hosts: false
 compose: 
   private_dns_name: private-dns-name 
   ec2_id: instance_id
-  ansible_host: private_ip_address
+  ansible_host: public_ip_address
   
 keyed_groups:
   - key: 'tags.group_name'
