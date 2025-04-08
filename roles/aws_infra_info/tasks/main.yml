@@ -36,4 +36,3 @@
     vpc_subnet_id: "{{ vpc_subnet_info.subnets[0].subnet_id }}"
     igw_id: "{{ igw_info.internet_gateways[0].internet_gateway_id }}"
     sec_grp_name: "{{ sec_info.security_groups[0].group_name }}"
-  when: (vpc_info.vpcs | length) > 0
