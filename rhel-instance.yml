@@ -41,3 +41,15 @@
         wait: yes
       async: 3000
       poll: 30
+      register: instances 
+
+    - name: Name the instances
+      amazon.aws.ec2_tag:
+        resource: "{{ item.instance_id }}"
+        state: present
+        tags:
+          Name: "{{ prj | default('demo') }}-server-{{ idx }}"
+          env: dev
+      loop: "{{ instances.instances }}"
+      loop_control:
+        index_var: idx
