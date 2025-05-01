@@ -1,0 +1,70 @@
+--- 
+- name: Create a snapshot of instance 
+  hosts: localhost 
+
+  tasks: 
+    - name: Get caller info 
+      amazon.aws.aws_caller_info:
+      register: caller 
+
+    - name: Gather EC2 facts
+      amazon.aws.ec2_instance_info:
+        filters:
+          "tag:Name": demo-server-0
+          instance-state-name: ["running"]
+      register: instances
+
+    - name: Get snapshot id 
+      amazon.aws.ec2_snapshot_info:
+        filters:
+          owner-id: "{{ caller.account }}"
+      register: snapshots
+
+    - debug:
+        var: snapshots 
+
+    - name: Print out some facts
+      ansible.builtin.debug:
+        msg: 
+          - "EC2 Instance ID: {{ instances.instances.0.instance_id }}"
+          - "Snapshot ID: {{ snapshots.snapshots.0.snapshot_id }}"
+          - "### Storage Info ###"
+          - "Device Name : {{ instances.instances.0.root_device_name }}"
+          - "Device volume_id: {{ instances.instances.0.block_device_mappings.0.ebs.volume_id }}"
+
+    - name: Store device name and volume_id
+      ansible.builtin.set_fact:
+        snapshot_id: "{{ snapshots.snapshots.0.snapshot_id }}"
+        instance_id: "{{ instances.instances.0.instance_id }}"
+        device_name: "{{ instances.instances.0.root_device_name }}"
+        volume_id: "{{ instances.instances.0.block_device_mappings.0.ebs.volume_id }}"
+
+    - name: Shutdown instance 
+      amazon.aws.ec2_instance:
+        state: stopped 
+        instance_ids:
+          - "{{ instance_id }}"
+
+    # - name: Detach old instance volume (probably a better approach but requires cleanup schedule)
+    #   amazon.aws.ec2_vol:
+    #     id: "{{ volume_id }}"
+    #     instance: None
+
+    - name: Delete the old volume (detach option in comment)
+      amazon.aws.ec2_vol:
+        id: "{{ volume_id }}"
+        instance: None
+        state: absent
+
+    - name: Restore volume from the snapshot and attach to instance
+      amazon.aws.ec2_vol:
+        instance: "{{ instance_id }}"
+        snapshot: "{{ snapshot_id }}"
+        device_name: /dev/sda1
+      register: restored_vol
+
+    - name: Startup instance 
+      amazon.aws.ec2_instance:
+        state: started 
+        instance_ids:
+          - "{{ instance_id }}"

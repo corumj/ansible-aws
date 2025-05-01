@@ -1,0 +1,68 @@
+--- 
+- name: Install a simple HTTP web app we can backup
+  hosts: demo-server-0 
+  become: yes 
+  
+  tasks: 
+    - name: Install httpd 
+      ansible.builtin.package:
+        name: httpd 
+        state: present 
+
+    - name: Copy a simple web app to the server 
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html 
+        content: | 
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+              <title>Edit features with the Editor component | Sample | ArcGIS Maps SDK for JavaScript 4.32</title>
+
+
+              <!-- Load Calcite components from CDN -->
+              <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
+
+              <!-- Load the ArcGIS Maps SDK for JavaScript -->
+              <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+              <script src="https://js.arcgis.com/4.32/"></script>
+
+              <!-- Load Map components from CDN-->
+              <script
+                type="module"
+                src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"
+              ></script>
+
+              <style>
+                html,
+                body {
+                  padding: 0;
+                  margin: 0;
+                  height: 100%;
+                  width: 100%;
+                }
+              </style>
+            </head>
+
+            <body>
+              <arcgis-map item-id="4793230052ed498ebf1c7bed9966bd35">
+                <arcgis-editor position="top-right"></arcgis-editor>
+              </arcgis-map>
+            </body>
+          </html>
+
+    - name: Start Apache server 
+      ansible.builtin.systemd_service:
+        name: httpd
+        state: started 
+        enabled: true 
+
+    - name: Test for 200 response from webserver 
+      ansible.builtin.uri: 
+        url: http://{{ ansible_host }}
+
+    - debug:
+        msg: "Application available at http://{{ ansible_host }}"
+
+

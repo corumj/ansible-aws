@@ -1,0 +1,91 @@
+--- 
+- name: Mess up our app, we got hacked!
+  hosts: demo-server-0 
+  gather_facts: no 
+  become: yes 
+
+  tasks: 
+
+    - name: hack our website
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html 
+        content: | 
+          <!doctype html>
+          <html lang="en">
+
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+            <title>Basemaps with different projections | Sample | ArcGIS Maps SDK for JavaScript 4.32</title>
+
+            <style>
+              html,
+              body {
+                padding: 0;
+                margin: 0;
+                height: 100%;
+                width: 100%;
+              }
+
+              #srDiv {
+                height: 40px;
+                padding: 10px;
+              }
+            </style>
+            <!-- Load Calcite components from CDN -->
+            <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
+
+            <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
+            <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+            <script src="https://js.arcgis.com/4.32/"></script>
+
+            <!-- Load Map components from CDN-->
+            <script type="module"
+              src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"></script>
+          </head>
+
+          <body>
+            <arcgis-map item-id="8d91bd39e873417ea21673e0fee87604" center="-100, 35" zoom="2">
+              <arcgis-zoom position="top-left"></arcgis-zoom>
+              <arcgis-placement position="top-right">
+                <div id="srDiv" class="esri-widget"></div>
+              </arcgis-placement>
+              <arcgis-expand position="top-right">
+                <arcgis-basemap-gallery></arcgis-basemap-gallery>
+              </arcgis-expand>
+            </arcgis-map>
+
+            <script>
+              require(["esri/portal/Portal", "esri/widgets/BasemapGallery/support/PortalBasemapsSource"], (Portal, PortalBasemapsSource) => {
+                const arcgisMap = document.querySelector("arcgis-map");
+
+
+                // get the basemap gallery element
+                const basemapGallery = document.querySelector("arcgis-basemap-gallery");
+                // create a portal instance
+                const portal = new Portal();
+
+                // source for basemaps from a portal group
+                // containing basemaps with different projections
+                const source = new PortalBasemapsSource({
+                  portal,
+                  query: {
+                    id: "bdb9d65e0b5c480c8dcc6916e7f4e099"
+                  }
+                });
+                basemapGallery.source = source;
+
+                const updateSRInfo = () => {
+                  if (arcgisMap.ready) {
+                    document.getElementById("srDiv").innerHTML = `map.spatialReference.wkid = <b>${arcgisMap.spatialReference.wkid}</b>`;
+                  }
+                }
+                arcgisMap.addEventListener("arcgisViewChange", updateSRInfo);
+              })
+            </script>
+          </body>
+
+          </html>
+
+    - debug:
+        msg: "View the hacked site (at your own risk): http://{{ ansible_host }}"
