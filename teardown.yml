@@ -17,6 +17,25 @@
           instance-state-name: "*" 
         wait: yes
 
+    - name: Get caller info 
+      amazon.aws.aws_caller_info:
+      register: caller 
+
+    - name: Get snapshot id 
+      amazon.aws.ec2_snapshot_info:
+        filters:
+          owner-id: "{{ caller.account }}"
+      register: snapshots
+
+    - amazon.aws.ec2_snapshot:
+        snapshot_id: "{{ snapshots.snapshots.0.snapshot_id }}"
+        state: absent
+      when: snapshots.snapshots | length > 0
+
+    - amazon.aws.ec2_vol:
+        snapshot: "{{ snapshots.snapshots.0.snapshot_id }}"
+        state: absent
+
     - name: Remove subnet route table 
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc_info.vpcs[0].vpc_id }}"
