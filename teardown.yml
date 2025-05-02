@@ -32,10 +32,6 @@
         state: absent
       when: snapshots.snapshots | length > 0
 
-    - amazon.aws.ec2_vol:
-        snapshot: "{{ snapshots.snapshots.0.snapshot_id }}"
-        state: absent
-
     - name: Remove subnet route table 
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc_info.vpcs[0].vpc_id }}"
