@@ -1,0 +1,64 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9@sha256:9e94b335b66993881a6fd8331050178049eec92475b68dfad8379d2168bcbf77
+
+dependencies:
+  ansible_core:
+    package_pip: ansible-core==2.15.13
+  ansible_runner:
+    package_pip: ansible-runner==2.3.6
+  galaxy:
+    collections:
+      - { name: community.general, version: 10.3.0 }
+      - { name: community.postgresql, version: 3.10.2 }
+      - { name: kubernetes.core, version: 5.1.0 }
+      - { name: ansible.posix, version: 1.6.2 }
+      - { name: redhat.rhel_system_roles, version: 1.95.7 }
+      - { name: community.crypto, version: 2.26.0 }
+      - { name: containers.podman, version: 1.16.3 }
+      - { name: community.aws }
+      - { name: amazon.aws }
+      - { name: redhat.openshift }
+      - { name: community.hashi_vault, version: 6.2.0 }
+      - { name: infra.leapp, version: 1.6.1 }
+      - { name: cloud.terraform, version: 4.0.0 }
+  python:
+    - pkgconfig
+    - passlib
+    - jmespath
+    - boto3 
+    - botocore
+    - b2
+    - hvac
+    
+  system:
+    - unzip [platform:rhel-9]
+
+  exclude:
+    system:
+      - openshift-clients
+
+additional_build_files:
+  - src: /Users/jcorum/.ansible.cfg
+    dest: configs
+
+additional_build_steps:
+  prepend_base:
+    - RUN microdnf -y install python3.11 python3.11-pip unzip
+
+  prepend_galaxy:
+    # Copy ansible.cfg from build directory to EE
+    - COPY _build/configs/.ansible.cfg /etc/ansible/ansible.cfg
+
+  prepend_final:
+    - RUN /usr/bin/microdnf install -y yum-utils
+    - RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    - RUN /usr/bin/microdnf install -y terraform
+
+options:
+  package_manager_path: /usr/bin/microdnf
+  # tags:
+  #     - quay.io/jerrycorum/aws_ee:1.1
