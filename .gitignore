@@ -4,3 +4,4 @@
 extra_vars.yml
 test.yml
 ansible-navigator.log
+context/*
