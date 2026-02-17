@@ -8,15 +8,16 @@ filters:
 #  instance-state-name: '*'
 
 hostnames:
-  - tag:Name
-  - private-dns-name
-
+  # - tag:Name
+  # - private-dns-name
+  - instance-id
 allow_duplicated_hosts: false 
 
 compose: 
   private_dns_name: private-dns-name 
   ec2_id: instance_id
-  ansible_host: public_ip_address
+  ansible_host: instance-id
+  ansible_user: ssm-user 
   
 keyed_groups:
   - key: 'tags.group_name'
