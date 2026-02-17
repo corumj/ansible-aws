@@ -7,9 +7,9 @@ images:
 
 dependencies:
   ansible_core:
-    package_pip: ansible-core==2.15.13
+    package_pip: ansible-core>=2.16.2
   ansible_runner:
-    package_pip: ansible-runner==2.3.6
+    package_pip: ansible-runner>=2.3.6
   galaxy:
     collections:
       - { name: community.general, version: 10.3.0 }
@@ -36,13 +36,20 @@ dependencies:
     
   system:
     - unzip [platform:rhel-9]
+    - glibc 
+    - less 
+    - sudo 
+
+  python_interpreter:
+      package_system: "python311"
+      python_path: "/usr/bin/python3.11"
 
   exclude:
     system:
       - openshift-clients
 
 additional_build_files:
-  - src: /Users/jcorum/.ansible.cfg
+  - src: ansible.cfg
     dest: configs
 
 additional_build_steps:
@@ -51,13 +58,27 @@ additional_build_steps:
 
   prepend_galaxy:
     # Copy ansible.cfg from build directory to EE
-    - COPY _build/configs/.ansible.cfg /etc/ansible/ansible.cfg
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
 
   prepend_final:
     - RUN /usr/bin/microdnf install -y yum-utils
     - RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
     - RUN /usr/bin/microdnf install -y terraform
-
+    - |
+      RUN ARCH=$(uname -m) && \
+      if [ "$ARCH" = "x86_64" ]; then \
+          CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"; \
+          SSM_URL="https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm"; \
+      else \
+          CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"; \
+          SSM_URL="https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_arm64/session-manager-plugin.rpm"; \
+      fi && \
+      curl "$CLI_URL" -o "awscliv2.zip" && \
+      unzip awscliv2.zip && ./aws/install && \
+      curl "$SSM_URL" -o "session-manager-plugin.rpm" && \
+      /usr/bin/rpm -i session-manager-plugin.rpm && \
+      rm -rf awscliv2.zip ./aws session-manager-plugin.rpm
+    - RUN microdnf clean all
 options:
   package_manager_path: /usr/bin/microdnf
   # tags:
