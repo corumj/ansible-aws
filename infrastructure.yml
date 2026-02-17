@@ -102,3 +102,33 @@
         name: "ansible-demo-key"
         key_material: "{{ public_key }}"
         state: present
+      register: keyinfo 
+
+    - debug: 
+        var: keyinfo 
+
+    - name: Get the current caller identity information
+      amazon.aws.aws_caller_info:
+      register: caller_info
+
+    - debug: 
+        msg: "{{ caller_info.arn | regex_search(':user\\/(.+)$', '\\1') | first }}"
+
+    - name: "Creat iam role for ssm"
+      amazon.aws.iam_role: 
+        name: jpc-ansible-ssm-role 
+        create_instance_profile: true 
+        description: "role to test ssm connection for ansible"
+        assume_role_policy_document:  "{{ lookup('template', 'ssm_role.json.j2') }}"
+        managed_policies:
+          - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        state: present 
+
+    - name: Create SSM policy 
+      amazon.aws.iam_policy:
+        iam_type: role
+        iam_name: jpc-ansible-ssm-role 
+        policy_name: "jpc-ssm-policy-ansible-connect-test"
+        state: present
+        policy_json: "{{ lookup('template', 'ssm_policy.json.j2') }}"
+      register: new_policy 
